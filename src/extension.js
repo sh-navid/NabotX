@@ -150,7 +150,7 @@ class NaBotXSidePanelProvider {
     let html = load(this, "views", "panel.html");
 
     const tabView = load(this, "views", "tab.html");
-  
+
     // Default config values
     const defaultConfig = {
       path: "",
@@ -242,20 +242,6 @@ function activate(context) {
   );
 
   context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider(
-      "nabotxSidePanelView",
-      nabotxSidePanelProvider
-    )
-  );
-  context.subscriptions.push(
-    vscode.commands.registerCommand("nabotx.openPanel", () => {
-      vscode.commands.executeCommand(
-        "workbench.view.extension.nabotxSidePanel"
-      );
-    })
-  );
-
-  context.subscriptions.push(
     vscode.commands.registerCommand(
       "nabotx.addToChatExplorer",
       async (resourceUri) => {
@@ -325,45 +311,44 @@ function activate(context) {
     })
   );
 
-  const statusBarItem = vscode.window.createStatusBarItem(
-    vscode.StatusBarAlignment.Right,
-    100
-  );
-  statusBarItem.text = "$(rocket) NaBotX";
-  statusBarItem.tooltip = "NaBotX";
-  statusBarItem.command = "nabotx.openPanel";
-  statusBarItem.show();
-  context.subscriptions.push(statusBarItem);
+  // Check for configuration values on activation
+  checkConfiguration();
 
-   // Check for configuration values on activation
-   checkConfiguration();
-
-   // Listen for configuration changes
-   vscode.workspace.onDidChangeConfiguration(event => {
-       if (event.affectsConfiguration('nabotx.path') || event.affectsConfiguration('nabotx.token') || event.affectsConfiguration('nabotx.model')) {
-           checkConfiguration();
-       }
-   });
+  // Listen for configuration changes
+  vscode.workspace.onDidChangeConfiguration((event) => {
+    if (
+      event.affectsConfiguration("nabotx.path") ||
+      event.affectsConfiguration("nabotx.token") ||
+      event.affectsConfiguration("nabotx.model")
+    ) {
+      checkConfiguration();
+    }
+  });
 }
 
 function deactivate() {}
 
 function checkConfiguration() {
-    const configuration = vscode.workspace.getConfiguration("nabotx");
-    const path = configuration.get("path") || "";
-    const token = configuration.get("token") || "";
-    const model = configuration.get("model") || "";
+  const configuration = vscode.workspace.getConfiguration("nabotx");
+  const path = configuration.get("path") || "";
+  const token = configuration.get("token") || "";
+  const model = configuration.get("model") || "";
 
-    if (!path || !token || !model) {
-        vscode.window.showWarningMessage(
-            "NaBotX: Please configure the extension settings (path, token, model) for the extension to work properly.",
-            "Open Settings"
-        ).then(selection => {
-            if (selection === "Open Settings") {
-                vscode.commands.executeCommand("workbench.action.openSettings", "nabotx");
-            }
-        });
-    }
+  if (!path || !token || !model) {
+    vscode.window
+      .showWarningMessage(
+        "NaBotX: Please configure the extension settings (path, token, model) for the extension to work properly.",
+        "Open Settings"
+      )
+      .then((selection) => {
+        if (selection === "Open Settings") {
+          vscode.commands.executeCommand(
+            "workbench.action.openSettings",
+            "nabotx"
+          );
+        }
+      });
+  }
 }
 
 module.exports = { activate, deactivate };
